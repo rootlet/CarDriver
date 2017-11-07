@@ -1,0 +1,13 @@
+2017-11-07 22:07:39,573 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:173) - dbImage is null, creating a new one
+2017-11-07 22:20:11,964 [Testbed] ERROR org.jbox2d.testbed.framework.TestbedTest._load(TestbedTest.java:438) - File not found error while loading
+java.io.FileNotFoundException: car.box2d (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at java.io.FileInputStream.<init>(FileInputStream.java:93)
+	at org.jbox2d.testbed.framework.TestbedTest._load(TestbedTest.java:435)
+	at org.jbox2d.testbed.framework.TestbedTest.update(TestbedTest.java:512)
+	at org.jbox2d.testbed.framework.TestbedController.update(TestbedController.java:203)
+	at org.jbox2d.testbed.framework.TestbedController.run(TestbedController.java:330)
+	at java.lang.Thread.run(Thread.java:745)
+2017-11-07 22:48:40,896 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:173) - dbImage is null, creating a new one
