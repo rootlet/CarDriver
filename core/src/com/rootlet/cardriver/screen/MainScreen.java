@@ -3,8 +3,15 @@ package com.rootlet.cardriver.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -13,6 +20,7 @@ import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.rootlet.cardriver.CarDriver;
 
 /**
  * Created by pavlenko on 11/7/17.
@@ -24,17 +32,27 @@ public class MainScreen implements Screen {
     Box2DDebugRenderer rend;
     OrthographicCamera camera;
     Body rect;
+    Body car;
+    PolygonShape wheelFL;
+    PolygonShape shape;
+    ChainShape chainShape;
+
+    Batch batch = new SpriteBatch();
+    BitmapFont font24;
+
 
     @Override
     public void show() {
         //Задаем гравитацию
-        word = new World(new Vector2(0, -10), false);
+        //word = new World(new Vector2(0, -10), false);
+        word = new World(new Vector2(0, 0), false);
         camera = new OrthographicCamera(20, 15);
         camera.position.set(new Vector2(10, 7.5f), 0);
         rend = new Box2DDebugRenderer();
 
-        createRect();
-
+        createCar();
+        createWall();
+        initFont();
 
     }
 
@@ -49,8 +67,17 @@ public class MainScreen implements Screen {
 
         word.step(delta, 4, 4);
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) rect.applyForceToCenter(new Vector2(-50, 0), true);
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) rect.applyForceToCenter(new Vector2(50, 0), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) car.applyForceToCenter(new Vector2(-50, 0), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) car.applyForceToCenter(new Vector2(50, 0), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) car.setAngularVelocity(0.5f);
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) car.setAngularVelocity(-0.5f);
+
+
+
+
+        batch.begin();
+        font24.draw(batch, "CAR DRIVER", 50, 50);
+        batch.end();
     }
 
     @Override
@@ -75,7 +102,9 @@ public class MainScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        font24.dispose();
+        chainShape.dispose();
+        shape.dispose();
     }
 
     private void createRect() {
@@ -87,16 +116,18 @@ public class MainScreen implements Screen {
 
         FixtureDef fDef = new FixtureDef();
 
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(2, 2);
 
+
+        shape = new PolygonShape();
+
+        shape.setAsBox(2,2);
         fDef.shape = shape;
         fDef.density = 2;
         fDef.friction = 0.1f;
 
         rect.createFixture(fDef);
-        shape.dispose();
-        createWall();
+
+
     }
 
     private void createWall() {
@@ -108,7 +139,7 @@ public class MainScreen implements Screen {
 
         FixtureDef fDef = new FixtureDef();
 
-        ChainShape chainShape = new ChainShape();
+        chainShape = new ChainShape();
 
         chainShape.createChain(new Vector2[] {new Vector2(0, 10), new Vector2(1, 0), new Vector2(19, 0), new Vector2(20, 15)});
 
@@ -118,6 +149,59 @@ public class MainScreen implements Screen {
         fDef.friction = 0.1f;
 
         w.createFixture(fDef);
-        chainShape.dispose();
+
+
+    }
+
+    private void initFont() {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/roboto/Roboto-Black.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        parameter.size = 24;
+        parameter.color = Color.CORAL;
+        //parameter.shadowColor = Color.CYAN;
+        //parameter.shadowOffsetX = (1);
+        //parameter.borderColor = Color.BROWN;
+        //parameter.borderWidth = 1;
+
+        font24 = generator.generateFont(parameter);
+        font24.getData().setScale(2f);
+
+    }
+
+    private void createCar() {
+        BodyDef bDef = new BodyDef();
+        bDef.type = BodyDef.BodyType.DynamicBody;
+        bDef.position.set(10, 10);
+
+        car = word.createBody(bDef);
+
+        FixtureDef fDef = new FixtureDef();
+
+
+
+        shape = new PolygonShape();
+        shape.setAsBox(1,2);
+
+        // Колеса автомобиля
+        wheelFL = new PolygonShape();
+        PolygonShape wheelFR = new PolygonShape();
+        PolygonShape wheelBL = new PolygonShape();
+        PolygonShape wheelBR = new PolygonShape();
+        wheelFL.setAsBox(0.2f, 0.4f, new Vector2(-1,1), 0);
+        wheelFR.setAsBox(0.2f, 0.4f, new Vector2(1,1), 0);
+        wheelBL.setAsBox(0.2f, 0.4f, new Vector2(-1,-1), 0);
+        wheelBR.setAsBox(0.2f, 0.4f, new Vector2(1,-1), 0);
+
+        fDef.shape = shape;
+        fDef.density = 2;
+        fDef.friction = 0.1f;
+
+        car.createFixture(fDef);
+        car.createFixture(wheelFL, 2);
+        car.createFixture(wheelFR, 2);
+        car.createFixture(wheelBL, 2);
+        car.createFixture(wheelBR, 2);
+
     }
 }

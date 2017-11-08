@@ -11,3 +11,5 @@ java.io.FileNotFoundException: car.box2d (No such file or directory)
 	at org.jbox2d.testbed.framework.TestbedController.run(TestbedController.java:330)
 	at java.lang.Thread.run(Thread.java:745)
 2017-11-07 22:48:40,896 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:173) - dbImage is null, creating a new one
+2017-11-08 22:54:54,763 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:173) - dbImage is null, creating a new one
+2017-11-08 23:16:34,378 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:173) - dbImage is null, creating a new one
