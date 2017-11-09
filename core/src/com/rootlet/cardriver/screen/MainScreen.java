@@ -11,10 +11,13 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -51,7 +54,7 @@ public class MainScreen implements Screen {
         rend = new Box2DDebugRenderer();
 
         createCar();
-        createWall();
+        //createWall();
         initFont();
 
     }
@@ -67,12 +70,14 @@ public class MainScreen implements Screen {
 
         word.step(delta, 4, 4);
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) car.applyForceToCenter(new Vector2(-50, 0), true);
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) car.applyForceToCenter(new Vector2(50, 0), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) car.applyForceToCenter(new Vector2(-100, 0), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) car.applyForceToCenter(new Vector2(100, 0), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) car.applyForceToCenter(new Vector2(0, 100), true);
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) car.applyForceToCenter(new Vector2(0, -100), true);
         if (Gdx.input.isKeyPressed(Input.Keys.A)) car.setAngularVelocity(0.5f);
         if (Gdx.input.isKeyPressed(Input.Keys.D)) car.setAngularVelocity(-0.5f);
 
-
+        updateFriction();
 
 
         batch.begin();
@@ -172,16 +177,20 @@ public class MainScreen implements Screen {
     private void createCar() {
         BodyDef bDef = new BodyDef();
         bDef.type = BodyDef.BodyType.DynamicBody;
-        bDef.position.set(10, 10);
+        //bDef.position.set(10, 10);
 
         car = word.createBody(bDef);
+        shape = new PolygonShape();
+        shape.setAsBox(1,2);
+        car.createFixture(shape, 1);
+        car.setUserData(this);
 
         FixtureDef fDef = new FixtureDef();
 
 
 
-        shape = new PolygonShape();
-        shape.setAsBox(1,2);
+
+
 
         // Колеса автомобиля
         wheelFL = new PolygonShape();
@@ -197,11 +206,25 @@ public class MainScreen implements Screen {
         fDef.density = 2;
         fDef.friction = 0.1f;
 
-        car.createFixture(fDef);
+        //car.createFixture(fDef);
         car.createFixture(wheelFL, 2);
         car.createFixture(wheelFR, 2);
         car.createFixture(wheelBL, 2);
         car.createFixture(wheelBR, 2);
 
     }
+
+    public Vector2 getLeteralVelocity() {
+        Vector2 currentRightNormal = car.getWorldVector(new Vector2(1,0));
+        return currentRightNormal.scl(currentRightNormal.dot(car.getLinearVelocity()));
+    }
+
+    public void updateFriction() {
+        Vector2 impulse = getLeteralVelocity().scl(-car.getMass());
+        car.applyLinearImpulse(impulse, car.getWorldCenter(), true);
+    }
+
+    // Пример построения автомобиля))
+    //http://www.iforce2d.net/b2dtut/top-down-car
+    //http://badlogicgames.com/forum/viewtopic.php?t=4531&p=21844
 }
