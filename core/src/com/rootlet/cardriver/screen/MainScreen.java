@@ -6,24 +6,20 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.rootlet.cardriver.CarDriver;
+
+import org.jbox2d.common.Settings;
 
 /**
  * Created by pavlenko on 11/7/17.
@@ -42,6 +38,8 @@ public class MainScreen implements Screen {
 
     Batch batch = new SpriteBatch();
     BitmapFont font24;
+
+    float value;
 
 
     @Override
@@ -81,7 +79,7 @@ public class MainScreen implements Screen {
 
 
         batch.begin();
-        font24.draw(batch, "CAR DRIVER", 50, 50);
+        font24.draw(batch, "CAR DRIVER " + value, 50, 50);
         batch.end();
     }
 
@@ -219,9 +217,37 @@ public class MainScreen implements Screen {
         return currentRightNormal.scl(currentRightNormal.dot(car.getLinearVelocity()));
     }
 
+    public Vector2 getForwardVelocity() {
+        Vector2 currentForwardNormal = car.getWorldVector(new Vector2(0,1));
+        return currentForwardNormal.scl(currentForwardNormal.dot(car.getLinearVelocity()));
+    }
+
     public void updateFriction() {
         Vector2 impulse = getLeteralVelocity().scl(-car.getMass());
-        car.applyLinearImpulse(impulse, car.getWorldCenter(), true);
+        car.applyLinearImpulse(impulse, car.getWorldCenter(), false);
+
+        car.applyAngularImpulse(0.1f * car.getInertia() * -car.getAngularVelocity(), false);
+
+        Vector2 currentForwardNormal = getForwardVelocity();
+        float currentForwardSpeed = normalize(currentForwardNormal);
+        value = currentForwardNormal.len();
+        float dragForceMagnitude = -2 * currentForwardSpeed;
+        car.applyForce( currentForwardNormal.scl(dragForceMagnitude ), car.getWorldCenter(), false );
+    }
+
+    /// Convert this vector into a unit vector. Returns the length.
+    private float normalize(Vector2 vector2)
+    {
+        float length = vector2.len();
+        if (length < Settings.EPSILON)
+        {
+            return 0.0f;
+        }
+        float invLength = 1.0f / length;
+        vector2.x *= invLength;
+        vector2.y *= invLength;
+
+        return length;
     }
 
     // Пример построения автомобиля))
