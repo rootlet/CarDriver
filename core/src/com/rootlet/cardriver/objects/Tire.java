@@ -1,32 +1,44 @@
-package com.rootlet.cardriver.world;
+package com.rootlet.cardriver.objects;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.rootlet.cardriver.helpers.Control;
 
 import org.jbox2d.common.Settings;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Created by rootlet on 11.11.2017.
  */
 
-public class Car {
+public class Tire {
     private World world;
     private Body tire;
     private PolygonShape tireShape;
     public Control conrrolState;
+    Set<GroundAreaFUD> groundAreas;
 
-    public Car(World world) {
+    private float currentTraction;
+
+    float maxForwardSpeed = 100;  // 100;
+    float maxBackwardSpeed = -20; // -20;
+    float maxDriveForce = 150;    // 150;
+
+    public Tire(World world) {
         this.world = world;
+        currentTraction = 1;
         createTire();
     }
 
     private void createTire() {
         BodyDef bDef = new BodyDef();
         bDef.type = BodyDef.BodyType.DynamicBody;
-        //bDef.position.set(10, 10);
+        //bDef.position.set(50, 50);
         tire = world.createBody(bDef);
 
         tireShape = new PolygonShape();
@@ -52,14 +64,14 @@ public class Car {
         if ( impulse.len() > 2.5f )
             impulse = new Vector2(impulse).scl(2.5f / impulse.len());
         //----------------------------------------------------------------------
-        tire.applyLinearImpulse(impulse, tire.getWorldCenter(), true);
+        tire.applyLinearImpulse(new Vector2(impulse).scl(currentTraction), tire.getWorldCenter(), true);
 
-        tire.applyAngularImpulse(0.1f * tire.getInertia() * -tire.getAngularVelocity(), true);
+        tire.applyAngularImpulse(currentTraction * 0.1f * tire.getInertia() * -tire.getAngularVelocity(), true);
 
         Vector2 currentForwardNormal = getForwardVelocity();
         float currentForwardSpeed = normalize(currentForwardNormal);
         float dragForceMagnitude = -2 * currentForwardSpeed;
-        tire.applyForce( new Vector2(currentForwardNormal).scl(dragForceMagnitude ), tire.getWorldCenter(), true );
+        tire.applyForce(new Vector2(currentForwardNormal).scl(dragForceMagnitude * currentTraction), tire.getWorldCenter(), true );
     }
 
     /// Convert this vector into a unit vector. Returns the length.
@@ -77,18 +89,6 @@ public class Car {
         return length;
     }
 
-    //tire class variables
-    float maxForwardSpeed = 10;  // 100;
-    float maxBackwardSpeed = -2; // -20;
-    float maxDriveForce = 15;    // 150;
-
-    public enum Control{
-        NONE,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN
-    }
     //tire class function
     public void updateDrive(Control controlState) {
         //find desired speed
@@ -111,7 +111,7 @@ public class Car {
             force = -maxDriveForce;
         else
             return;
-        tire.applyForce(new Vector2(currentForwardNormal).scl(force),tire.getWorldCenter(), true);
+        tire.applyForce(new Vector2(currentForwardNormal).scl(force * currentTraction),tire.getWorldCenter(), true);
     }
 
     public void updateTurn(Control controlState) {
@@ -124,16 +124,30 @@ public class Car {
         tire.applyTorque( desiredTorque, true );
     }
 
+    public void addGroundArea(GroundAreaFUD ga) { groundAreas.add(ga); updateTraction(); }
+    public void removeGroundArea(GroundAreaFUD ga) { groundAreas.remove(ga); updateTraction(); }
+    void updateTraction()
+    {
+        if (groundAreas.isEmpty())
+            currentTraction = 1;
+        else {
+            //find area with highest traction
+            currentTraction = 0;
 
-    public World getWorld() {
-        return world;
-    }
-
-    public Body getTire() {
-        return tire;
+            Iterator<GroundAreaFUD> it = groundAreas.iterator();
+            while (it.hasNext()) {
+                GroundAreaFUD ga = it.next();
+                if (ga.frictionModifier > currentTraction)
+                    currentTraction = ga.frictionModifier;
+            }
+        }
     }
 
     public PolygonShape getTireShape() {
         return tireShape;
+    }
+
+    public float getCurrentTraction() {
+        return currentTraction;
     }
 }
