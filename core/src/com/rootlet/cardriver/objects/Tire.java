@@ -3,12 +3,14 @@ package com.rootlet.cardriver.objects;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.rootlet.cardriver.helpers.Control;
 
 import org.jbox2d.common.Settings;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -43,9 +45,11 @@ public class Tire {
 
         tireShape = new PolygonShape();
         tireShape.setAsBox(0.5f, 1.25f);
-        tire.createFixture(tireShape, 1);
+        Fixture fixture = tire.createFixture(tireShape, 1);
+        fixture.setUserData(new CarTireFUD());
+        //tire.createFixture(tireShape, 1);
         tire.setUserData(this);
-
+        groundAreas = new HashSet<GroundAreaFUD>();
     }
 
     private Vector2 getLeteralVelocity() {
