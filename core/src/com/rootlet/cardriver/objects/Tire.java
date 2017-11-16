@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class Tire {
     private World world;
-    private Body tire;
+    public Body tireBody;
     private PolygonShape tireShape;
     public Control conrrolState;
     Set<GroundAreaFUD> groundAreas;
@@ -41,41 +41,41 @@ public class Tire {
         BodyDef bDef = new BodyDef();
         bDef.type = BodyDef.BodyType.DynamicBody;
         //bDef.position.set(50, 50);
-        tire = world.createBody(bDef);
+        tireBody = world.createBody(bDef);
 
         tireShape = new PolygonShape();
         tireShape.setAsBox(0.5f, 1.25f);
-        Fixture fixture = tire.createFixture(tireShape, 1);
+        Fixture fixture = tireBody.createFixture(tireShape, 1);
         fixture.setUserData(new CarTireFUD());
-        //tire.createFixture(tireShape, 1);
-        tire.setUserData(this);
+        //tireBody.createFixture(tireShape, 1);
+        tireBody.setUserData(this);
         groundAreas = new HashSet<GroundAreaFUD>();
     }
 
     private Vector2 getLeteralVelocity() {
-        Vector2 currentRightNormal = tire.getWorldVector(new Vector2(1,0));
-        return new Vector2(currentRightNormal).scl(currentRightNormal.dot(tire.getLinearVelocity()));
+        Vector2 currentRightNormal = tireBody.getWorldVector(new Vector2(1,0));
+        return new Vector2(currentRightNormal).scl(currentRightNormal.dot(tireBody.getLinearVelocity()));
     }
 
     private Vector2 getForwardVelocity() {
-        Vector2 currentForwardNormal = tire.getWorldVector(new Vector2(0,1));
-        return new Vector2(currentForwardNormal).scl(currentForwardNormal.dot(tire.getLinearVelocity()));
+        Vector2 currentForwardNormal = tireBody.getWorldVector(new Vector2(0,1));
+        return new Vector2(currentForwardNormal).scl(currentForwardNormal.dot(tireBody.getLinearVelocity()));
     }
 
     public void updateFriction() {
-        Vector2 impulse = new Vector2(getLeteralVelocity()).scl(-tire.getMass());
+        Vector2 impulse = new Vector2(getLeteralVelocity()).scl(-tireBody.getMass());
         //-------------------Занос---------------------------------------------
         if ( impulse.len() > 2.5f )
             impulse = new Vector2(impulse).scl(2.5f / impulse.len());
         //----------------------------------------------------------------------
-        tire.applyLinearImpulse(new Vector2(impulse).scl(currentTraction), tire.getWorldCenter(), true);
+        tireBody.applyLinearImpulse(new Vector2(impulse).scl(currentTraction), tireBody.getWorldCenter(), true);
 
-        tire.applyAngularImpulse(currentTraction * 0.1f * tire.getInertia() * -tire.getAngularVelocity(), true);
+        tireBody.applyAngularImpulse(currentTraction * 0.1f * tireBody.getInertia() * -tireBody.getAngularVelocity(), true);
 
         Vector2 currentForwardNormal = getForwardVelocity();
         float currentForwardSpeed = normalize(currentForwardNormal);
         float dragForceMagnitude = -2 * currentForwardSpeed;
-        tire.applyForce(new Vector2(currentForwardNormal).scl(dragForceMagnitude * currentTraction), tire.getWorldCenter(), true );
+        tireBody.applyForce(new Vector2(currentForwardNormal).scl(dragForceMagnitude * currentTraction), tireBody.getWorldCenter(), true );
     }
 
     /// Convert this vector into a unit vector. Returns the length.
@@ -93,7 +93,7 @@ public class Tire {
         return length;
     }
 
-    //tire class function
+    //tireBody class function
     public void updateDrive(Control controlState) {
         //find desired speed
         float desiredSpeed = 0;
@@ -104,7 +104,7 @@ public class Tire {
         }
 
         //find current speed in forward direction
-        Vector2 currentForwardNormal = tire.getWorldVector( new Vector2(0,1) );
+        Vector2 currentForwardNormal = tireBody.getWorldVector( new Vector2(0,1) );
         float currentSpeed = getForwardVelocity().dot(currentForwardNormal);
 
         //apply necessary force
@@ -115,7 +115,7 @@ public class Tire {
             force = -maxDriveForce;
         else
             return;
-        tire.applyForce(new Vector2(currentForwardNormal).scl(force * currentTraction),tire.getWorldCenter(), true);
+        tireBody.applyForce(new Vector2(currentForwardNormal).scl(force * currentTraction), tireBody.getWorldCenter(), true);
     }
 
     public void updateTurn(Control controlState) {
@@ -125,7 +125,7 @@ public class Tire {
             case RIGHT: desiredTorque = -15; break;
             default: break;//nothing
         }
-        tire.applyTorque( desiredTorque, true );
+        tireBody.applyTorque( desiredTorque, true );
     }
 
     public void addGroundArea(GroundAreaFUD ga) { groundAreas.add(ga); updateTraction(); }

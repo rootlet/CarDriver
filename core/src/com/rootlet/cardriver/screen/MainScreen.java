@@ -25,6 +25,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.rootlet.cardriver.helpers.Control;
 import com.rootlet.cardriver.helpers.FixtureUserDataType;
 import com.rootlet.cardriver.helpers.MyContactListener;
+import com.rootlet.cardriver.objects.Car;
 import com.rootlet.cardriver.objects.FixtureUserData;
 import com.rootlet.cardriver.objects.GroundAreaFUD;
 import com.rootlet.cardriver.objects.Tire;
@@ -50,6 +51,7 @@ public class MainScreen implements Screen {
     BitmapFont font24;
 
     Tire tire;
+    Car car;
     Body groundBody;
     PolygonShape polygonShape;
 
@@ -89,13 +91,15 @@ public class MainScreen implements Screen {
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) control = Control.UP;
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) control = Control.DOWN;
 
-        tire.updateFriction();
+        /*tire.updateFriction();
         tire.updateDrive(control);
-        tire.updateTurn(control);
+        tire.updateTurn(control);*/
+
+        car.update(control);
 
         batch.begin();
         font24.draw(batch, "CAR DRIVER " + value, 50, 50);
-        font24.draw(batch, "currentTraction = " + tire.getCurrentTraction(), 50, 100);
+//        font24.draw(batch, "currentTraction = " + tire.getCurrentTraction(), 50, 100);
         batch.end();
     }
 
@@ -168,7 +172,9 @@ public class MainScreen implements Screen {
     }
 
     public void createCar() {
-        tire = new Tire(world);
+
+        //tire = new Tire(world);
+        car = new Car(world);
     }
 
     public void createGround() {
