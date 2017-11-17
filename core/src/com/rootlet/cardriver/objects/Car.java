@@ -83,22 +83,24 @@ public class Car {
 
     }
 
-    public void update(Control controlState) {
+    public void update() {
         for (int i = 0; i < tires.size(); i++)
             tires.get(i).updateFriction();
         for (int i = 0; i < tires.size(); i++)
-            tires.get(i).updateDrive(controlState);
+            tires.get(i).updateDrive();
 
 
         float lockAngle = 40 * DEGTORAD;
         float turnSpeedPerSec = 320 * DEGTORAD;//from lock to lock in 0.25 sec
         float turnPerTimeStep = turnSpeedPerSec / 60.0f;
         float desiredAngle = 0;
-        switch ( controlState ) {
+        if (Control.left) desiredAngle = lockAngle;
+        if (Control.right) desiredAngle = -lockAngle;
+        /*switch ( Control.left ) {
             case LEFT:  desiredAngle = lockAngle;  break;
             case RIGHT: desiredAngle = -lockAngle; break;
             default: ;//nothing
-        }
+        }*/
         float angleNow = flJoint.getJointAngle();
         float angleToTurn = desiredAngle - angleNow;
         angleToTurn = MathUtils.clamp( angleToTurn, -turnPerTimeStep, turnPerTimeStep );

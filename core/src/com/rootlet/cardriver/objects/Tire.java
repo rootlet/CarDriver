@@ -94,14 +94,16 @@ public class Tire {
     }
 
     //tireBody class function
-    public void updateDrive(Control controlState) {
+    public void updateDrive() {
         //find desired speed
         float desiredSpeed = 0;
-        switch (controlState) {
+        if (Control.up) desiredSpeed = maxForwardSpeed;
+        if (Control.down) desiredSpeed = maxBackwardSpeed;
+        /*switch (controlState) {
             case UP:   desiredSpeed = maxForwardSpeed; break;
             case DOWN: desiredSpeed = maxBackwardSpeed; break;
             default: return;//do nothing
-        }
+        }*/
 
         //find current speed in forward direction
         Vector2 currentForwardNormal = tireBody.getWorldVector( new Vector2(0,1) );
@@ -118,13 +120,15 @@ public class Tire {
         tireBody.applyForce(new Vector2(currentForwardNormal).scl(force * currentTraction), tireBody.getWorldCenter(), true);
     }
 
-    public void updateTurn(Control controlState) {
+    public void updateTurn() {
         float desiredTorque = 0;
-        switch (controlState) {
+        if (Control.left) desiredTorque = 15;
+        if (Control.right) desiredTorque = -15;
+        /*switch (controlState) {
             case LEFT:  desiredTorque = 15;  break;
             case RIGHT: desiredTorque = -15; break;
             default: break;//nothing
-        }
+        }*/
         tireBody.applyTorque( desiredTorque, true );
     }
 

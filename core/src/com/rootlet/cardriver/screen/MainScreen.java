@@ -13,11 +13,9 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -85,17 +83,17 @@ public class MainScreen implements Screen {
 
         world.step(delta, 4, 4);
 
-        Control control = Control.NONE;
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) control = Control.LEFT;
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) control = Control.RIGHT;
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) control = Control.UP;
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) control = Control.DOWN;
+        //Control control = Control.NONE;
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) Control.left = true; else Control.left = false;
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) Control.right = true; else Control.right = false;
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) Control.up = true; else Control.up = false;
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) Control.down = true; else Control.down = false;
 
         /*tire.updateFriction();
         tire.updateDrive(control);
         tire.updateTurn(control);*/
 
-        car.update(control);
+        car.update();
 
         batch.begin();
         font24.draw(batch, "CAR DRIVER " + value, 50, 50);
@@ -196,10 +194,16 @@ public class MainScreen implements Screen {
     }
 
     public void tire_vs_groundArea(Fixture tireFixture, Fixture groundAreaFixture, boolean began) {
+        System.out.println(tireFixture.getBody());
+
         Tire tire = (Tire)tireFixture.getBody().getUserData();
         GroundAreaFUD gaFud = (GroundAreaFUD)groundAreaFixture.getUserData();
         if ( began )
-            tire.addGroundArea( gaFud );
+        {
+            System.out.println("22223");System.out.println("tire == null, " + tire == null);
+            System.out.println(tire.toString());
+            //tire.addGroundArea(gaFud);
+        tire.getCurrentTraction();}
         else
             tire.removeGroundArea( gaFud );
     };
